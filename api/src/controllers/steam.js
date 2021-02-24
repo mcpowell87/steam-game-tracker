@@ -2,6 +2,7 @@ const got = require('got');
 const SteamApi = require('../constants/steamApiUrls');
 
 const getAppDetails = async (req, res) => {
+    // ToDo: I think I should queue this since steam has a 200 limit per 5 minutes.
     if (!req.params.appId) {
         res.status(400).json({ message: "AppId is required." });
         return;
@@ -11,7 +12,6 @@ const getAppDetails = async (req, res) => {
         const response = await got(SteamApi.AppDetails(req.params.appId));
         res.status(200).json(response.body);
     } catch (error) {
-        // ToDo: Parse error and trigger retry if we hit the 200/min limit.
         res.status(500).json({ error });
     }
 }
