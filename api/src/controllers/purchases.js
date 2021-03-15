@@ -4,11 +4,43 @@ const get = (req, res) => {
     if (!req.params.steamId) {
         res.status(400).json({ message: "SteamId is required." });
     }
-    Purchases.find({steamId: req.params.steamId}).exec().then((purchases) => {
+
+    const filter = {
+        steamId: req.params.steamId
+    };
+
+    let startDate = null;
+    let endDate = null;
+
+    if (req.query.start) {
+        startDate = new Date(req.query.start);
+        startDate.setDate(startDate.getUTCDate());
+        startDate = new Date(startDate.setHours(0,0,0,0));
+        
+        if (req.query.end) {
+            endDate = new Date(req.query.end);
+            endDate.setDate(endDate.getUTCDate());
+            endDate = new Date(endDate.setHours(23,59,59,999));
+        }
+        else {
+            endDate = new Date(req.query.start);
+            endDate.setDate(endDate.getUTCDate());
+            endDate = new Date(endDate.setHours(23,59,59,999));
+        }
+    }
+
+    if (startDate) {
+        try {
+            filter.datePurchased = { $gte: startDate.toISOString(), $lte: endDate.toISOString() };
+        } catch (error) {
+        }
+    }
+
+    Purchases.find(filter).exec().then((purchases) => {
         return res.status(200).json(purchases || []);
     })
     .catch(err => {
-        res.status(500).json({error: err})
+        return res.status(500).json({error: err})
     });
     
     
