@@ -3,16 +3,6 @@ const path = require('path');
 const SteamApi = require('../api/steam');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-// Get current list of games owned
-
-// Query new list of games owned
-
-// Filter out duplicates
-
-// Get app details for new games
-
-// Add new ones one by one
-
 const delayBetweenSteamApiCalls = 1500;
 
 const args = process.argv.slice(2);
@@ -27,22 +17,26 @@ if (!steamId) {
 }
 
 console.log(`Getting currently tracked purchases for steam id ${steamId}`);
+// Get current list of games owned from mongo
 got(`http://localhost:30000/api/purchases/${steamId}`)
 .then(res => {
     var results = JSON.parse(res.body);
     console.log(`Found ${results.length} existing purchases.`);
     gamesList.current = results;
     console.log(`Pulling games list from the steam api for user ${steamId}`)
+    // Get a new list of games owned from the steam api
     return SteamApi.getOwnedGames(process.env.STEAM_API_KEY, steamId);
 }).then(res => {
     var apiResults = JSON.parse(res.body);
     console.log(`Steam returned ${apiResults.response.game_count} owned games.`);
     gamesList.new = apiResults.response.games;
+    // Compare with existing list to get the new purchases.
     return Promise.resolve(getNewPurchases(gamesList.new, gamesList.current));
 }).then(newGames => {
     console.log(`Found ${newGames.length} new purchases since the last run.`);
     purchasesToProcess = newGames;
     console.log("Processing purchases.");
+    // Process each record.
     setTimeout(processPurchase, delayBetweenSteamApiCalls);
 }).catch(err => {
     console.error(err);
@@ -88,7 +82,8 @@ const processPurchase = () => {
             headerImage: steamResult.data.header_image,
             developers: steamResult.data.developers,
             price: steamResult.data.price_overview ? steamResult.data.price_overview.final : 0,
-            priceFormatted: steamResult.data.price_overview ? steamResult.data.price_overview.final_formatted : "$0.00"
+            priceFormatted: steamResult.data.price_overview ? steamResult.data.price_overview.final_formatted : "$0.00",
+            datePurchased: date
         };
 
         console.debug(`Adding ${purchase.name} (appid: ${purchase.appId}) with price ${purchase.priceFormatted}`)

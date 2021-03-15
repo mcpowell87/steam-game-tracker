@@ -17,7 +17,10 @@ const purchasesSchema = new mongoose.Schema([{
     publishers: [String],
     price: Number,
     priceFormatted: String,
-    datePurchased: Date
+    datePurchased: {
+        type: Date,
+        required: true
+    }
 }]);
 
 purchasesSchema.index({
