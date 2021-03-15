@@ -1,5 +1,4 @@
-const got = require('got');
-const SteamApi = require('../constants/steamApiUrls');
+const SteamApi = require('../api/steam');
 
 const getAppDetails = async (req, res) => {
     // ToDo: I think I should queue this since steam has a 200 limit per 5 minutes.
@@ -9,7 +8,7 @@ const getAppDetails = async (req, res) => {
     }
 
     try {
-        const response = await got(SteamApi.AppDetails(req.params.appId));
+        const response = await SteamApi.getAppDetails(req.params.appId);
         res.status(200).json(response.body);
     } catch (error) {
         res.status(500).json({ error });
@@ -23,7 +22,7 @@ const getOwnedGames = async (req, res) => {
     }
 
     try {
-        const response = await got(SteamApi.GetOwnedGames(req.query.key, req.params.steamId));
+        const response = await SteamApi.getOwnedGames(req.params.steamId, req.query.key);
         res.status(200).json(response.body);
     } catch (error) {
         res.status(500).json({ error });

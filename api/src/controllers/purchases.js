@@ -1,24 +1,26 @@
 const Purchases = require("../models/purchases");
 
-const get = async (req, res) => {
+const get = (req, res) => {
     if (!req.params.steamId) {
         res.status(400).json({ message: "SteamId is required." });
     }
-    var purchases = await Purchases.find({steamId: req.params.steamId}).exec()
+    Purchases.find({steamId: req.params.steamId}).exec().then((purchases) => {
+        return res.status(200).json(purchases || []);
+    })
     .catch(err => {
         res.status(500).json({error: err})
     });
     
-    return res.status(200).json(purchases);
+    
 }
 
-const create = async (req, res) => {
-    if (!req.params.purchases || req.params.purchases.length == 0) {
+const create = (req, res) => {
+    if (!req.body.purchases || req.body.purchases.length == 0) {
         res.status(400).json({ message: "Purchases is required." });
         return;
     }
 
-    const purchases = new Purchases(req.body);
+    const purchases = new Purchases();
 
     const errors = purchases.validateSync();
 
@@ -27,12 +29,13 @@ const create = async (req, res) => {
         return;
     }
 
-    await Purchases.insertMany(req.body)
+    Purchases.insertMany(req.body.purchases)
+    .then(() => {
+        return res.status(200).json({success: true});
+    })
     .catch(err => {
-        res.status(500).json({error: err})
+        return res.status(500).json({error: err});
     });
-
-    return res.status(200);
 }
 
 module.exports = {

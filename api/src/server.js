@@ -1,7 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require('path');
 const routes = require('./routes');
-require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 
