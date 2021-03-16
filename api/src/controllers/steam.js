@@ -15,6 +15,15 @@ const getAppDetails = async (req, res) => {
     }
 }
 
+const getAppList = async (req, res) => {
+    try {
+        const response = await SteamApi.getAppList();
+        res.status(200).json(response.body);
+    } catch (error) {
+        res.status(500).json({ error });
+    }
+}
+
 const getOwnedGames = async (req, res) => {
     if (!req.query.key || !req.params.steamId) {
         res.status(400).json({ message: "Key and SteamId are required."} );
@@ -31,5 +40,6 @@ const getOwnedGames = async (req, res) => {
 
 module.exports = {
     getAppDetails,
-    getOwnedGames
+    getOwnedGames,
+    getAppList
 }

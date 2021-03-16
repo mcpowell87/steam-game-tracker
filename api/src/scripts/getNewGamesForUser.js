@@ -9,6 +9,7 @@ const args = process.argv.slice(2);
 const steamId = args[0];
 let gamesList = {}
 let purchasesToProcess = [];
+let removedGames = [];
 const date = new Date();
 
 if (!steamId) {
@@ -71,6 +72,11 @@ const processPurchase = () => {
         var steamResult = JSON.parse(res.body)[nextItem.appid];
         if (!steamResult.success || !steamResult.data) {
             console.warn(`Received an invalid steam api response for ${nextItem.appid}`);
+
+            if (steamResult.success) {
+                removedGames.push(nextItem.appid);
+            }
+
             doNext();
             return;
         }
@@ -107,11 +113,40 @@ const processPurchase = () => {
     })
 }
 
+const processRemoved = () => {
+    if (removedGames.length > 0) {
+        console.log(`Found ${removedGames.length} games that have been removed from the steam store.`);
+        SteamApi.getAppList()
+        .then(apps => {
+            const removed = [];
+            for (var i = 0; i < removedGames.length; i++) {
+                const purchase = {
+                    steamId,
+                    appId: removedGames[i],
+                    name: apps[removedGames[i]],
+                    price: 0,
+                    priceFormatted: "$0.00",
+                    datePurchased: date
+                };
+                removed.push(purchase);
+            }
+
+            return got.post(`http://localhost:30000/api/purchases`, { json: { purchases: removed } });
+        }).then(() => {
+            removedGames = [];
+        }).catch(error => {
+            console.error("Error while processing the removed games list.");
+            console.error(error);
+        })
+    }
+}
+
 const doNext = () => {
     if (purchasesToProcess.length > 0) {
         setTimeout(processPurchase, delayBetweenSteamApiCalls);
     }
     else {
+        processRemoved();
         console.log("No more purchases to process.");
     }
 }

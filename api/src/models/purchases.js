@@ -10,6 +10,7 @@ const purchasesSchema = new mongoose.Schema([{
         type: Number,
         required: true
     },
+    removed: Boolean,
     name: String,
     type: String,
     headerImage: String,
