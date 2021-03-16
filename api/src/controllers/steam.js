@@ -18,7 +18,7 @@ const getAppDetails = async (req, res) => {
 const getAppList = async (req, res) => {
     try {
         const response = await SteamApi.getAppList();
-        res.status(200).json(response.body);
+        res.status(200).json(response);
     } catch (error) {
         res.status(500).json({ error });
     }

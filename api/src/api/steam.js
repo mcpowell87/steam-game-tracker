@@ -17,7 +17,7 @@ const getAppList = () => {
             acc[cur.appid] = cur.name;
             return acc;
         }, {});
-        Promise.resolve(apps);
+        return Promise.resolve(apps);
     });
 }
 

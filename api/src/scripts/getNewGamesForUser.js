@@ -3,7 +3,7 @@ const path = require('path');
 const SteamApi = require('../api/steam');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-const delayBetweenSteamApiCalls = 1500;
+const delayBetweenSteamApiCalls = 1000;
 
 const args = process.argv.slice(2);
 const steamId = args[0];
@@ -73,9 +73,7 @@ const processPurchase = () => {
         if (!steamResult.success || !steamResult.data) {
             console.warn(`Received an invalid steam api response for ${nextItem.appid}`);
 
-            if (steamResult.success) {
-                removedGames.push(nextItem.appid);
-            }
+            removedGames.push(nextItem.appid);
 
             doNext();
             return;
@@ -123,12 +121,18 @@ const processRemoved = () => {
                 const purchase = {
                     steamId,
                     appId: removedGames[i],
-                    name: apps[removedGames[i]],
                     price: 0,
                     priceFormatted: "$0.00",
                     datePurchased: date
                 };
+                if (apps[removedGames[i]]) {
+                    purchase.name = apps[removedGames[i]];
+                }
                 removed.push(purchase);
+            }
+
+            if (removed.length === 0) {
+                return Promise.resolve();
             }
 
             return got.post(`http://localhost:30000/api/purchases`, { json: { purchases: removed } });
