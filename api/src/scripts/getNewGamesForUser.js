@@ -111,6 +111,7 @@ const processPurchase = () => {
     })
 }
 
+// Process games that were removed from the steam store.
 const processRemoved = () => {
     if (removedGames.length > 0) {
         console.log(`Found ${removedGames.length} games that have been removed from the steam store.`);

@@ -1,5 +1,4 @@
 {
     "steamApiBaseUrl": "http://api.steampowered.com",
-    "steamStoreBaseUrl": "http://store.steampowered.com",
-    "db": "mongodb://database.home:27017/steamTracking"
+    "steamStoreBaseUrl": "http://store.steampowered.com"
 }
