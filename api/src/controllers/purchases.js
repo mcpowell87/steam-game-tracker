@@ -1,6 +1,7 @@
 const Purchases = require("../models/purchases");
 
 const get = (req, res) => {
+    console.log("/")
     if (!req.params.steamId) {
         res.status(400).json({ message: "SteamId is required." });
     }

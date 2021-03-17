@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const morgan = require('morgan');
 const path = require('path');
 const routes = require('./routes');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
@@ -8,9 +9,9 @@ const app = express();
 
 app.use(bodyParser.json());
 
-app.use(bodyParser.json());
-
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(morgan('combined'))
 
 const db = require("./models");
 db.mongoose
