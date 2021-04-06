@@ -19,7 +19,7 @@ if (!steamId) {
 
 console.log(`Getting currently tracked purchases for steam id ${steamId}`);
 // Get current list of games owned from mongo
-got(`http://localhost:30000/api/purchases/${steamId}`)
+got(`http://${process.env.API_URL}/api/purchases/${steamId}`)
 .then(res => {
     var results = JSON.parse(res.body);
     console.log(`Found ${results.length} existing purchases.`);
@@ -91,7 +91,7 @@ const processPurchase = () => {
         };
 
         console.debug(`Adding ${purchase.name} (appid: ${purchase.appId}) with price ${purchase.priceFormatted}`)
-        got.post(`http://localhost:30000/api/purchases`, { json: { purchases: purchase } })
+        got.post(`http://${process.env.API_URL}/api/purchases`, { json: { purchases: purchase } })
         .then(r => {
             doNext();
         }).catch(err => {
@@ -136,7 +136,7 @@ const processRemoved = () => {
                 return Promise.resolve();
             }
 
-            return got.post(`http://localhost:30000/api/purchases`, { json: { purchases: removed } });
+            return got.post(`http://${process.env.API_URL}/api/purchases`, { json: { purchases: removed } });
         }).then(() => {
             removedGames = [];
         }).catch(error => {

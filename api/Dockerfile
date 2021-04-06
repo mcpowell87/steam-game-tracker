@@ -4,6 +4,7 @@ ENV MONGO_DB=localhost
 ENV MONGO_USER=root
 ENV MONGO_PASS=root
 ENV STEAM_API_KEY=
+ENV API_URL=localhost:30000
 ENV TZ=America/New_York
 
 EXPOSE 30000
