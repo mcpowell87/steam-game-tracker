@@ -5,43 +5,47 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 const delayBetweenSteamApiCalls = 1000;
 
-const args = process.argv.slice(2);
-const steamId = args[0];
-let gamesList = {}
-let purchasesToProcess = [];
 let removedGames = [];
-const date = new Date();
+let purchasesToProcess = [];
 
-if (!steamId) {
-    console.warn("SteamID is required.");
-    return;
+const getNewGamesForUser = (steamId) => {
+    let gamesList = {}
+    
+    removedGames = [];
+    purchasesToProcess = [];
+    const date = new Date();
+
+    if (!steamId) {
+        console.warn("SteamID is required.");
+        return;
+    }
+
+    console.log(`Getting currently tracked purchases for steam id ${steamId}`);
+    // Get current list of games owned from mongo
+    got(`http://${process.env.API_URL}/api/purchases/${steamId}`)
+    .then(res => {
+        var results = JSON.parse(res.body);
+        console.log(`Found ${results.length} existing purchases.`);
+        gamesList.current = results;
+        console.log(`Pulling games list from the steam api for user ${steamId}`)
+        // Get a new list of games owned from the steam api
+        return SteamApi.getOwnedGames(process.env.STEAM_API_KEY, steamId);
+    }).then(res => {
+        var apiResults = JSON.parse(res.body);
+        console.log(`Steam returned ${apiResults.response.game_count} owned games.`);
+        gamesList.new = apiResults.response.games;
+        // Compare with existing list to get the new purchases.
+        return Promise.resolve(getNewPurchases(gamesList.new, gamesList.current));
+    }).then(newGames => {
+        console.log(`Found ${newGames.length} new purchases since the last run.`);
+        purchasesToProcess = newGames;
+        console.log("Processing purchases.");
+        // Process each record.
+        setTimeout(processPurchase, delayBetweenSteamApiCalls);
+    }).catch(err => {
+        console.error(err);
+    })
 }
-
-console.log(`Getting currently tracked purchases for steam id ${steamId}`);
-// Get current list of games owned from mongo
-got(`http://${process.env.API_URL}/api/purchases/${steamId}`)
-.then(res => {
-    var results = JSON.parse(res.body);
-    console.log(`Found ${results.length} existing purchases.`);
-    gamesList.current = results;
-    console.log(`Pulling games list from the steam api for user ${steamId}`)
-    // Get a new list of games owned from the steam api
-    return SteamApi.getOwnedGames(process.env.STEAM_API_KEY, steamId);
-}).then(res => {
-    var apiResults = JSON.parse(res.body);
-    console.log(`Steam returned ${apiResults.response.game_count} owned games.`);
-    gamesList.new = apiResults.response.games;
-    // Compare with existing list to get the new purchases.
-    return Promise.resolve(getNewPurchases(gamesList.new, gamesList.current));
-}).then(newGames => {
-    console.log(`Found ${newGames.length} new purchases since the last run.`);
-    purchasesToProcess = newGames;
-    console.log("Processing purchases.");
-    // Process each record.
-    setTimeout(processPurchase, delayBetweenSteamApiCalls);
-}).catch(err => {
-    console.error(err);
-})
 
 const getNewPurchases = (newList, current) => {
     const existing = current.reduce((acc, cur) => {
@@ -155,3 +159,5 @@ const doNext = () => {
         console.log("No more purchases to process.");
     }
 }
+
+module.exports = getNewGamesForUser;

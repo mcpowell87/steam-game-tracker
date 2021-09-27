@@ -1,15 +1,16 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const path = require('path');
 const routes = require('./routes');
+const getNewGamesForUser = require('./scripts/getNewGamesForUser');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
+let gameChecker = null;
 
-app.use(bodyParser.json());
+app.use(express.json());
 
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 
 app.use(morgan('combined'))
 
@@ -35,4 +36,11 @@ app.use('/api', routes)
 const PORT = process.env.PORT || 30000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
+    console.log('Starting game checker')
+    checkForNewGames();
 });
+
+const checkForNewGames = () => {
+  getNewGamesForUser(process.env.STEAM_ID);
+  gameChecker = setInterval(checkForNewGames, 1000 * 60 * 60);
+}
