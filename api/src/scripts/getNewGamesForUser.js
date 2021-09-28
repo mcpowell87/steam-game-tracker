@@ -32,6 +32,11 @@ const getNewGamesForUser = (steamId) => {
         return SteamApi.getOwnedGames(process.env.STEAM_API_KEY, steamId);
     }).then(res => {
         var apiResults = JSON.parse(res.body);
+        if (!apiResults.response || !apiResults.response.games_count) {
+            const message = `Received invalid api response for user ${steamId}.  Is the users profile private?`;
+            console.warn(message);
+            return Promise.reject(message);
+        }
         console.log(`Steam returned ${apiResults.response.game_count} owned games.`);
         gamesList.new = apiResults.response.games;
         // Compare with existing list to get the new purchases.
