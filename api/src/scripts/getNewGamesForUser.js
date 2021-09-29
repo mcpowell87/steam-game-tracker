@@ -7,13 +7,15 @@ const delayBetweenSteamApiCalls = 1000;
 
 let removedGames = [];
 let purchasesToProcess = [];
+const steamId = process.env.STEAM_ID;
+let date = null;
 
-const getNewGamesForUser = (steamId) => {
+const getNewGamesForUser = () => {
     let gamesList = {}
     
     removedGames = [];
     purchasesToProcess = [];
-    const date = new Date();
+    date = new Date();
 
     if (!steamId) {
         console.warn("SteamID is required.");
