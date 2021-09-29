@@ -32,7 +32,7 @@ const getNewGamesForUser = (steamId) => {
         return SteamApi.getOwnedGames(process.env.STEAM_API_KEY, steamId);
     }).then(res => {
         var apiResults = JSON.parse(res.body);
-        if (!apiResults.response || !apiResults.response.games_count) {
+        if (!apiResults.response || !apiResults.response.game_count) {
             const message = `Received invalid api response for user ${steamId}.  Is the users profile private?`;
             console.warn(message);
             return Promise.reject(message);
