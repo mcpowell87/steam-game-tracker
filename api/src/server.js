@@ -42,5 +42,5 @@ app.listen(PORT, () => {
 
 const checkForNewGames = () => {
   getNewGamesForUser(process.env.STEAM_ID);
-  gameChecker = setInterval(checkForNewGames, 1000 * 60 * 60);
+  gameChecker = setTimeout(checkForNewGames, 1000 * 60 * 60);
 }
