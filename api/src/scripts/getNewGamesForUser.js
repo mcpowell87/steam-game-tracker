@@ -22,7 +22,7 @@ const getNewGamesForUser = () => {
         return;
     }
 
-    console.log(`Getting currently tracked purchases for steam id ${steamId}`);
+    console.log(`Getting currently tracked purchases for steam id ${steamId} (${new Date(Date.now())})`);
     // Get current list of games owned from mongo
     got(`http://${process.env.API_URL}/api/purchases/${steamId}`)
     .then(res => {
@@ -36,7 +36,6 @@ const getNewGamesForUser = () => {
         var apiResults = JSON.parse(res.body);
         if (!apiResults.response || !apiResults.response.game_count) {
             const message = `Received invalid api response for user ${steamId}.  Is the users profile private?`;
-            console.warn(message);
             return Promise.reject(message);
         }
         console.log(`Steam returned ${apiResults.response.game_count} owned games.`);
