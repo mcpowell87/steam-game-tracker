@@ -1,5 +1,6 @@
 const got = require('got');
 const SteamApiUrls = require('../constants/steamApiUrls');
+const cache = require('../util/cache');
 
 const getAppDetails = (appId) => {
     if (!appId) {
@@ -9,7 +10,11 @@ const getAppDetails = (appId) => {
     return got(SteamApiUrls.AppDetails(appId));
 }
 
-const getAppList = () => {
+const getAppList = (ignoreCache=false) => {
+    const cached = cache.get('apps');
+    if (cached && !ignoreCache) {
+        return Promise.resolve(cached);
+    }
     return got(SteamApiUrls.GetAppList())
     .then(response => {
         const body = JSON.parse(response.body);
@@ -17,6 +22,7 @@ const getAppList = () => {
             acc[cur.appid] = cur.name;
             return acc;
         }, {});
+        cache.set('apps', apps);
         return Promise.resolve(apps);
     });
 }

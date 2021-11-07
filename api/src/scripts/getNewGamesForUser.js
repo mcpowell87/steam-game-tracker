@@ -101,6 +101,10 @@ const processPurchase = () => {
         };
 
         console.debug(`Adding ${purchase.name} (appid: ${purchase.appId}) with price ${purchase.priceFormatted}`)
+        if (process.env.DRY_RUN === "true") {
+            doNext();
+            return;
+        }
         got.post(`http://${process.env.API_URL}/api/purchases`, { json: { purchases: purchase } })
         .then(r => {
             doNext();
@@ -142,7 +146,7 @@ const processRemoved = () => {
                 removed.push(purchase);
             }
 
-            if (removed.length === 0) {
+            if (removed.length === 0 || process.env.DRY_RUN === "true") {
                 return Promise.resolve();
             }
 
