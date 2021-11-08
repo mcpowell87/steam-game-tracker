@@ -9,6 +9,10 @@ const get = (req, res) => {
         steamId: req.params.steamId
     };
 
+    if (req.query.n) {
+        filter.name = { $regex: `${req.query.n}`, $options: "i" };
+    }
+
     let startDate = null;
     let endDate = null;
 
