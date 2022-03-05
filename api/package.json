@@ -16,5 +16,8 @@
   "devDependencies": {
     "eslint": "^7.19.0",
     "semistandard": "^16.0.0"
+  },
+  "engines": {
+    "node": "14.19.0"
   }
 }
