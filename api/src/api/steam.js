@@ -3,20 +3,31 @@ const SteamApiUrls = require('../constants/steamApiUrls');
 const cache = require('../util/cache');
 
 /**
- * 
- * @param {int} appId 
+ * Returns the app details given a app id.
+ * @param {int} appId App ID to get
+ * @param {bool} ignoreCache Force retrieval of fresh data
  * @returns App Details
  */
-const getAppDetails = (appId) => {
+const getAppDetails = (appId, ignoreCache=False) => {
     if (!appId) {
         return null;
     }
 
-    return got(SteamApiUrls.AppDetails(appId));
+    const cached = cache.get(appId);
+    if (cached && !ignoreCache) {
+        return Promise.resolve(cached);
+    }
+
+    return got(SteamApiUrls.AppDetails(appId))
+    .then(response => {
+        const body = JSON.parse(response.body);
+        cache.set(appId, body);
+        return Promise.resolve(body);
+    });
 }
 
 /**
- * 
+ * Returns the master list of apps from steam.
  * @param {bool} ignoreCache Force retrieval of fresh data
  * @returns Gets the list of apps.
  */
@@ -38,7 +49,7 @@ const getAppList = (ignoreCache=false) => {
 }
 
 /**
- * 
+ * Gets a list of owned games for a steam user.
  * @param {string} key Api Key
  * @param {string} steamId Steam ID
  * @returns List of owned games given a steam user.
