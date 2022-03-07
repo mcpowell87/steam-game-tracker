@@ -17,37 +17,40 @@ class PurchaseProcessor {
         if (!steamIds || steamIds.length === 0) {
             throw "SteamIds is a required parameter."
         }
-        this.purchaseQueue = new Queue();
-        this.removedGamesQueue = new Queue();
-        this.trackedSteamIds = steamIds;
-        this.running = false;
-        this.getPurchasesInterval = null;
-        this.processPurchaseTimer = null;
+        this.#purchaseQueue = new Queue();
+        this.#removedGamesQueue = new Queue();
+        this.#trackedSteamIds = steamIds;
+        this.#getPurchasesInterval = null;
+        this.#processPurchaseTimer = null;
     }
 
+    /**
+     * Starts the purchase processor.
+     */
     start = () => {
         console.log("Starting purchase processor.");
-        this.running = true;
         this.#getAllPurchases();
-        this.getPurchasesInterval = setInterval(this.#getAllPurchases, this.#getPurchaseInterval);
+        this.#getPurchasesInterval = setInterval(this.#getAllPurchases, this.#getPurchaseInterval);
         this.#doNext();
     }
 
+    /**
+     * Stops the purchase processor.
+     */
     stop = () => {
         console.log("Stopping purchase processor");
-        this.running = false;
-        clearInterval(this.getPurchasesInterval);
-        clearTimeout(this.processPurchaseTimer);
+        clearInterval(this.#getPurchasesInterval);
+        clearTimeout(this.#processPurchaseTimer);
     }
 
     /**
      * Gets a purchases for all tracked users and inserts each to a processing queue.
      */
     #getAllPurchases = async () => {
-        for (let i = 0; i < this.trackedSteamIds.length; i++) {
-            const newPurchases = await this.#getNewPurchasesForUser(this.trackedSteamIds[i]);
+        for (let i = 0; i < this.#trackedSteamIds.length; i++) {
+            const newPurchases = await this.#getNewPurchasesForUser(this.#trackedSteamIds[i]);
             if (!newPurchases || newPurchases.length === 0) {
-                console.log(`Found no new purchases for user ${this.trackedSteamIds[i]}`);
+                console.log(`Found no new purchases for user ${this.#trackedSteamIds[i]}`);
                 continue;
             }
             this.#addToPurchaseQueue(newPurchases);
@@ -90,22 +93,32 @@ class PurchaseProcessor {
         });
     }
 
+    /**
+     * Adds purchases to the purchase queue.
+     * @param {[any]} purchases List of purchases
+     * @returns {undefined}
+     */
     #addToPurchaseQueue = (purchases) => {
         if (!purchases || purchases.length === 0) {
             return;
         }
         console.log(`Adding ${purchases.length} purchases to the process queue.`);
         for (let i = 0; i < purchases.length; i++) {
-            this.purchaseQueue.enqueue(purchases[i])
+            this.#purchaseQueue.enqueue(purchases[i])
         }
     }
 
+    /**
+     * Processes a purchase, which includes getting app details from the steam
+     * api and inserting into mongo.
+     * @returns {undefined}
+     */
     #processPurchase = () => {
-        if (this.purchaseQueue.isEmpty()) {
+        if (this.#purchaseQueue.isEmpty()) {
             return;
         }
 
-        const nextItem = this.purchaseQueue.dequeue();
+        const nextItem = this.#purchaseQueue.dequeue();
         console.info(`Processing ${nextItem.appid}`);
         SteamApi.getAppDetails(nextItem.appid)
         .then(res => {
@@ -114,7 +127,7 @@ class PurchaseProcessor {
                 console.warn(`Received and invalid steam api response for ${nextItem.appid}`);
 
                 // Add this to a queue to be processed separately
-                this.removedGamesQueue.enqueue(nextItem.appid);
+                this.#removedGamesQueue.enqueue(nextItem.appid);
 
                 return;
             }
@@ -148,16 +161,21 @@ class PurchaseProcessor {
         });
     }
 
+    /**
+     * Processes purchases that were detected, but were removed from steam,
+     * meaning there is no app detail for it.
+     * @returns {undefined}
+     */
     #processRemoved = () => {
-        if (this.removedGamesQueue.isEmpty()) {
+        if (this.#removedGamesQueue.isEmpty()) {
             return;
         }
 
         SteamApi.getAppList()
         .then(apps => {
             const removed = [];
-            while (!this.removedGamesQueue.isEmpty()) {
-                const appId = this.removedGamesQueue.dequeue();
+            while (!this.#removedGamesQueue.isEmpty()) {
+                const appId = this.#removedGamesQueue.dequeue();
                 const purchase = {
                     steamId,
                     appId,
@@ -184,6 +202,12 @@ class PurchaseProcessor {
         })  
     }
 
+    /**
+     * Returns a list containing just the new purchases.
+     * @param {[any]} newList New list of purchases
+     * @param {[any]} current Current list of purchases
+     * @returns {[any]} A list of all new purchases
+     */
     #filterNewPurchases = (newList, current) => {
         const existing = current.reduce((acc, cur) => {
             acc[cur.appId] = cur;
@@ -200,9 +224,12 @@ class PurchaseProcessor {
         return onlyNew;
     }
     
+    /**
+     * Process purchases and set up additional timers to handle the remaining queue items.
+     */
     #doNext = () => {
         this.#processPurchase();
-        if (!this.purchaseQueue.isEmpty()) {
+        if (!this.#purchaseQueue.isEmpty()) {
             setTimeout(this.#doNext, this.#delayBetweenSteamApiCalls);
         }
         else {
