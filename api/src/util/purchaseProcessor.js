@@ -52,12 +52,13 @@ class PurchaseProcessor {
      */
     #getAllPurchases = async () => {
         for (let i = 0; i < this.#trackedSteamIds.length; i++) {
-            const newPurchases = await this.#getNewPurchasesForUser(this.#trackedSteamIds[i]);
+            const steamId = this.#trackedSteamIds[i]
+            const newPurchases = await this.#getNewPurchasesForUser(steamId);
             if (!newPurchases || newPurchases.length === 0) {
-                console.log(`Found no new purchases for user ${this.#trackedSteamIds[i]}`);
+                console.log(`Found no new purchases for user ${steamId}`);
                 continue;
             }
-            this.#addToPurchaseQueue(newPurchases);
+            this.#addToPurchaseQueue(newPurchases, steamId);
         }
     }
 
@@ -100,14 +101,16 @@ class PurchaseProcessor {
     /**
      * Adds purchases to the purchase queue.
      * @param {[any]} purchases List of purchases
+     * @param {string} steamId The steam id associated with the purchases
      * @returns {undefined}
      */
-    #addToPurchaseQueue = (purchases) => {
+    #addToPurchaseQueue = (purchases, steamId) => {
         if (!purchases || purchases.length === 0) {
             return;
         }
         console.log(`Adding ${purchases.length} purchases to the process queue.`);
         for (let i = 0; i < purchases.length; i++) {
+            purchases[i].steamId = steamId
             this.#purchaseQueue.enqueue(purchases[i])
         }
     }
@@ -136,7 +139,7 @@ class PurchaseProcessor {
                 return;
             }
             const purchase = {
-                steamId,
+                steamId: nextItem.steamId,
                 appId: nextItem.appid,
                 name: steamResult.data.name,
                 type: steamResult.data.type,
