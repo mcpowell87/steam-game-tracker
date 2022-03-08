@@ -8,6 +8,11 @@ class PurchaseProcessor {
     #delayBetweenSteamApiCalls = 1000;
     #longPoll = 60000;
     #getPurchaseInterval = 1000 * 60 * 60;
+    #purchaseQueue = null;
+    #removedGamesQueue = null;
+    #trackedSteamIds = [];
+    #getPurchasesInterval = null;
+    #processPurchaseTimer = null;
 
     /**
      * Constructor for the PurchaseProcessor
@@ -20,8 +25,7 @@ class PurchaseProcessor {
         this.#purchaseQueue = new Queue();
         this.#removedGamesQueue = new Queue();
         this.#trackedSteamIds = steamIds;
-        this.#getPurchasesInterval = null;
-        this.#processPurchaseTimer = null;
+        
     }
 
     /**
