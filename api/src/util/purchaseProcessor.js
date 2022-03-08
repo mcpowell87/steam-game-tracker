@@ -126,7 +126,7 @@ class PurchaseProcessor {
         console.info(`Processing ${nextItem.appid}`);
         SteamApi.getAppDetails(nextItem.appid)
         .then(res => {
-            const steamResult = res[nextItem.appId];
+            const steamResult = res[nextItem.appid];
             if (!steamResult.success || !steamResult.data) {
                 console.warn(`Received and invalid steam api response for ${nextItem.appid}`);
 
