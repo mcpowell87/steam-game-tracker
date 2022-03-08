@@ -8,7 +8,7 @@ const cache = require('../util/cache');
  * @param {bool} ignoreCache Force retrieval of fresh data
  * @returns App Details
  */
-const getAppDetails = (appId, ignoreCache=False) => {
+const getAppDetails = (appId, ignoreCache=false) => {
     if (!appId) {
         return null;
     }
