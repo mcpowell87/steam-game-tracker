@@ -18,17 +18,17 @@ const get = (req, res) => {
 
     if (req.query.start) {
         startDate = new Date(req.query.start);
-        startDate.setDate(startDate.getUTCDate());
+        //startDate.setDate(startDate.getUTCDate());
         startDate = new Date(startDate.setHours(0,0,0,0));
         
         if (req.query.end) {
             endDate = new Date(req.query.end);
-            endDate.setDate(endDate.getUTCDate());
+            //endDate.setDate(endDate.getUTCDate());
             endDate = new Date(endDate.setHours(23,59,59,999));
         }
         else {
             endDate = new Date(req.query.start);
-            endDate.setDate(endDate.getUTCDate());
+            //endDate.setDate(endDate.getUTCDate());
             endDate = new Date(endDate.setHours(23,59,59,999));
         }
     }
