@@ -1,4 +1,5 @@
 const Purchases = require("../models/purchases");
+const DateTime = require("luxon").DateTime;
 
 const get = (req, res) => {
     if (!req.params.steamId) {
@@ -17,25 +18,19 @@ const get = (req, res) => {
     let endDate = null;
 
     if (req.query.start) {
-        startDate = new Date(req.query.start);
-        //startDate.setDate(startDate.getUTCDate());
-        startDate = new Date(startDate.setHours(0,0,0,0));
+        startDate = DateTime.fromISO(req.query.start).setZone('America/New_York').startOf('day').toISO();
         
         if (req.query.end) {
-            endDate = new Date(req.query.end);
-            //endDate.setDate(endDate.getUTCDate());
-            endDate = new Date(endDate.setHours(23,59,59,999));
+            endDate = DateTime.fromISO(req.query.end).setZone('America/New_York').endOf('day').toISO();
         }
         else {
-            endDate = new Date(req.query.start);
-            //endDate.setDate(endDate.getUTCDate());
-            endDate = new Date(endDate.setHours(23,59,59,999));
+            endDate = DateTime.fromISO(req.query.end).setZone('America/New_York').endOf('day').toISO();
         }
     }
 
     if (startDate) {
         try {
-            filter.datePurchased = { $gte: startDate.toISOString(), $lte: endDate.toISOString() };
+            filter.datePurchased = { $gte: startDate, $lte: endDate };
         } catch (error) {
         }
     }

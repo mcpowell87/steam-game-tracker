@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const timezone = require("mongoose-timezone");
 mongoose.set('useCreateIndex', true);
 
 const purchasesSchema = new mongoose.Schema([{
@@ -33,8 +32,6 @@ purchasesSchema.index({
     unique: true,
     dropDupes: true
 });
-
-purchasesSchema.plugin(timezone, { paths: ['datePurchased']} );
 
 const Purchases = mongoose.model("Purchases", purchasesSchema);
 

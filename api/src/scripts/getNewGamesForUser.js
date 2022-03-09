@@ -1,5 +1,6 @@
 const got = require('got');
 const path = require('path');
+const { DateTime } = require('luxon');
 const SteamApi = require('../api/steam');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -15,7 +16,7 @@ const getNewGamesForUser = () => {
     
     removedGames = [];
     purchasesToProcess = [];
-    date = new Date();
+    date = DateTime.now().setZone('America/New_York').toISO();
 
     if (!steamId) {
         console.warn("SteamID is required.");
