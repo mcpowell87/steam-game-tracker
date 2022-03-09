@@ -24,7 +24,7 @@ const get = (req, res) => {
             endDate = DateTime.fromISO(req.query.end).setZone('America/New_York').endOf('day').toISO();
         }
         else {
-            endDate = DateTime.fromISO(req.query.end).setZone('America/New_York').endOf('day').toISO();
+            endDate = DateTime.fromISO(req.query.start).setZone('America/New_York').endOf('day').toISO();
         }
     }
 
