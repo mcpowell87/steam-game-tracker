@@ -1,5 +1,6 @@
 const got = require('got');
 const path = require('path');
+const { DateTime } = require('luxon');
 const SteamApi = require('../api/steam');
 const Queue = require('./queue');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
@@ -147,7 +148,7 @@ class PurchaseProcessor {
                 developers: steamResult.data.developers,
                 price: steamResult.data.price_overview ? steamResult.data.price_overview.final : 0,
                 priceFormatted: steamResult.data.price_overview ? steamResult.data.price_overview.final_formatted : "$0.00",
-                datePurchased: new Date()
+                datePurchased: DateTime.now().setZone('America/New_York').toISO()
             };
 
             console.debug(`Adding ${purchase.name} (appid: ${purchase.appId}) with price ${purchase.priceFormatted}`)
@@ -188,7 +189,7 @@ class PurchaseProcessor {
                     appId,
                     price: 0,
                     priceFormatted: "$0.00",
-                    datePurchased: new Date()
+                    datePurchased: DateTime.now().setZone('America/New_York').toISO()
                 };
                 if (apps[appId]) {
                     purchase.name = apps[appId];
