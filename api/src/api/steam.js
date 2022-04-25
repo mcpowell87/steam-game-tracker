@@ -1,6 +1,8 @@
 const got = require('got');
 const SteamApiUrls = require('../constants/steamApiUrls');
 const cache = require('../util/cache');
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 /**
  * Returns the app details given a app id.
@@ -54,12 +56,13 @@ const getAppList = (ignoreCache=false) => {
  * @param {string} steamId Steam ID
  * @returns List of owned games given a steam user.
  */
-const getOwnedGames = (key, steamId) => {
-    if (!key || !steamId) {
+const getOwnedGames = (steamId) => {
+    const apiKey = process.env.STEAM_API_KEY;
+    if (!apiKey || !steamId) {
         return null;
     }
 
-    return got(SteamApiUrls.GetOwnedGames(key, steamId));
+    return got(SteamApiUrls.GetOwnedGames(apiKey, steamId));
 }
 
 module.exports = {

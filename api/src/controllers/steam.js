@@ -25,13 +25,13 @@ const getAppList = async (req, res) => {
 }
 
 const getOwnedGames = async (req, res) => {
-    if (!req.query.key || !req.params.steamId) {
-        res.status(400).json({ message: "Key and SteamId are required."} );
+    if (!req.params.steamId) {
+        res.status(400).json({ message: "Missing parameter: SteamId"} );
         return;
     }
 
     try {
-        const response = await SteamApi.getOwnedGames(req.params.steamId, req.query.key);
+        const response = await SteamApi.getOwnedGames(req.params.steamId);
         res.status(200).json(response.body);
     } catch (error) {
         res.status(500).json({ error });

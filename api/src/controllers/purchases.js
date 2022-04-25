@@ -1,48 +1,40 @@
 const Purchases = require("../models/purchases");
-const DateTime = require("luxon").DateTime;
+const {
+    getPurchasesByDateRange,
+    searchPurchases,
+    calculateStats
+} = require('../helpers/purchases');
 
-const get = (req, res) => {
+const get = async (req, res) => {
     if (!req.params.steamId) {
-        res.status(400).json({ message: "SteamId is required." });
+        return res.status(400).json({ message: "SteamId is required." });
     }
-
-    const filter = {
-        steamId: req.params.steamId
-    };
-
-    if (req.query.n) {
-        filter.name = { $regex: `${req.query.n}`, $options: "i" };
-    }
-
-    let startDate = null;
-    let endDate = null;
-
-    if (req.query.start) {
-        startDate = DateTime.fromISO(req.query.start).setZone('America/New_York').startOf('day').toISO();
-        
-        if (req.query.end) {
-            endDate = DateTime.fromISO(req.query.end).setZone('America/New_York').endOf('day').toISO();
+    let purchases = [];
+    try {
+        if (req.query.n) {
+            purchases = await searchPurchases(req.params.steamId, req.query.n)
+        } else {
+            purchases = await getPurchasesByDateRange(req.params.steamId, req.query.start, req.query.end)
         }
-        else {
-            endDate = DateTime.fromISO(req.query.start).setZone('America/New_York').endOf('day').toISO();
-        }
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+    return res.status(200).json(purchases);
+}
+
+const stats = async (req, res) => {
+    if (!req.params.steamId) {
+        return res.status(400).json({ message: "SteamID is required." });
     }
 
-    if (startDate) {
-        try {
-            filter.datePurchased = { $gte: startDate, $lte: endDate };
-        } catch (error) {
-        }
+    try {
+        const stats = await calculateStats(req.params.steamId);
+        return res.status(200).json(stats);
+    } catch (error) {
+        console.error(error.message);
+        console.error(error);
+        return res.status(500).json({ error: "There was a problem while processing statistics." });
     }
-
-    Purchases.find(filter).exec().then((purchases) => {
-        return res.status(200).json(purchases || []);
-    })
-    .catch(err => {
-        return res.status(500).json({error: err})
-    });
-    
-    
 }
 
 const create = (req, res) => {
@@ -65,11 +57,12 @@ const create = (req, res) => {
         return res.status(200).json({success: true});
     })
     .catch(err => {
-        return res.status(500).json({error: err});
+        return res.status(500).json({ error: err.message });
     });
 }
 
 module.exports = {
     get,
-    create
+    create,
+    stats
 };

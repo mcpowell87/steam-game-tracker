@@ -26,7 +26,6 @@ class PurchaseProcessor {
         this.#purchaseQueue = new Queue();
         this.#removedGamesQueue = new Queue();
         this.#trackedSteamIds = steamIds;
-        
     }
 
     /**
@@ -66,7 +65,7 @@ class PurchaseProcessor {
     /**
      * Gets purchases for a specified steam user.
      * @param {string} steamId SteamID to get purchases for
-     * @returns 
+     * @returns
      */
     #getNewPurchasesForUser = async (steamId) => {
         if (!steamId) {
@@ -83,7 +82,7 @@ class PurchaseProcessor {
             gamesList.current = results;
             console.log(`Pulling games list from the steam api for user ${steamId}`)
             // Get a new list of games owned from the steam api
-            return SteamApi.getOwnedGames(process.env.STEAM_API_KEY, steamId);
+            return SteamApi.getOwnedGames(steamId);
         }).then(res => {
             var apiResults = JSON.parse(res.body);
             if (!apiResults.response || !apiResults.response.game_count) {
