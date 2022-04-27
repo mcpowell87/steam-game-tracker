@@ -242,7 +242,6 @@ class PurchaseProcessor {
         else {
             this.#processRemoved();
             setTimeout(this.#doNext, this.#longPoll);
-            console.log("No purchases in the process queue.  Sleeping.");
         }
     }
 }
