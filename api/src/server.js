@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const path = require('path');
 const routes = require('./routes');
+const cors = require('cors');
 const getNewGamesForUser = require('./scripts/getNewGamesForUser');
 const PurchaseProcessor = require('./util/purchaseProcessor');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
@@ -12,6 +13,8 @@ const purchaseProcessor = new PurchaseProcessor([process.env.STEAM_ID]);
 if (process.env.DRY_RUN) {
   console.debug("DRY RUN!")
 }
+
+app.use(cors());
 
 app.use(express.json());
 
