@@ -1,7 +1,0 @@
-{
-    "env": {
-        "node": 1,
-        "commonjs": true
-    },
-    "extends": "eslint:recommended"
-}
