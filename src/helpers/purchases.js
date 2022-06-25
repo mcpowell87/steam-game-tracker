@@ -43,6 +43,21 @@ const searchPurchases = (steamId, name) => {
     });
 }
 
+const getPurchaseByAppId = (steamId, appId) => {
+    const filter = {
+        steamId,
+        appId
+    };
+
+    return Purchases.findOne(filter).exec().then((err, purchase) => {
+        if (err) {
+            console.error(err);
+            throw err;
+        }
+        return purchase;
+    });
+}
+
 const calculateStats = async (steamId) => {
     const stats = {
         totalPlaytimeMinutes: 0,
@@ -93,6 +108,7 @@ const calculateStats = async (steamId) => {
 
 module.exports = {
     getPurchasesByDateRange,
+    getPurchaseByAppId,
     searchPurchases,
     calculateStats
 };

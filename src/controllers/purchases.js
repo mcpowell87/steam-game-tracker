@@ -2,7 +2,8 @@ const Purchases = require("../models/purchases");
 const {
     getPurchasesByDateRange,
     searchPurchases,
-    calculateStats
+    calculateStats,
+    getPurchaseByAppId
 } = require('../helpers/purchases');
 
 const get = async (req, res) => {
@@ -37,18 +38,25 @@ const stats = async (req, res) => {
     }
 }
 
-const create = (req, res) => {
+const create = async (req, res) => {
     if (!req.body.purchases || req.body.purchases.length == 0) {
         res.status(400).json({ message: "Purchases is required." });
         return;
     }
 
-    const purchases = new Purchases();
+    const purchases = new Purchases(req.body.purchases);
 
     const errors = purchases.validateSync();
 
     if (errors && errors.length > 0) {
         res.status(400).json({ message: "Input has one or more errors.", errors});
+        return;
+    }
+
+    // Check for dupes first
+    const exists = await getPurchaseByAppId(purchases.steamId, purchases.appId);
+    if (exists) {
+        res.status(409).json({ message: `AppId '${purchases.appId}' already found in the database`});
         return;
     }
 

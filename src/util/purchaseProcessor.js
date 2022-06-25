@@ -31,9 +31,9 @@ class PurchaseProcessor {
     /**
      * Starts the purchase processor.
      */
-    start = () => {
+    start = async () => {
         console.log("Starting purchase processor.");
-        this.#getAllPurchases();
+        await this.#getAllPurchases();
         this.#getPurchasesInterval = setInterval(this.#getAllPurchases, this.#getPurchaseInterval);
         this.#doNext();
     }
@@ -134,7 +134,7 @@ class PurchaseProcessor {
                 console.warn(`Received and invalid steam api response for ${nextItem.appid}`);
 
                 // Add this to a queue to be processed separately
-                this.#removedGamesQueue.enqueue(nextItem.appid);
+                this.#removedGamesQueue.enqueue(nextItem);
 
                 return;
             }
@@ -155,13 +155,26 @@ class PurchaseProcessor {
                 return;
             }
             return got.post(`http://${process.env.API_URL}/api/purchases`, { json: { purchases: purchase } })
+            .then(res => {
+                const { statusCode } = res;
+                if (statusCode >= 200 && statusCode < 300) {
+                    return;
+                } else if (statusCode === 409) {
+                    console.warn("Attempted to add duplicate entry into mongo.  Skipping.");
+                    return;
+                } else if (statusCode >= 500) {
+                    console.error(`Server error while adding \"${purchase.name}\" (${purchase.appId})`);
+                    this.#purchaseQueue.enqueue(nextItem);
+                }
+            })
             .catch(err => {
                 console.error(`Error while adding ${purchase.appId} to mongo.`);
-                if (err.response.body) {
-                    const errorBody = JSON.parse(err.response.body);
-                    if (errorBody.error && errorBody.error.code === "11000") {
-                        console.warn("Attempted to add duplicate entry into mongo.  Skipping.");
-                    }
+                if (err.response?.statusCode === 409) {
+                    console.warn("Attempted to add duplicate entry into mongo.  Skipping.");
+                    return;
+                } else if (err.response?.statusCode >= 500) {
+                    console.error(`Server error while adding \"${purchase.name}\" (${purchase.appId})`);
+                    this.#purchaseQueue.enqueue(nextItem);
                 }
                 console.error(err);
             });
@@ -182,16 +195,16 @@ class PurchaseProcessor {
         .then(apps => {
             const removed = [];
             while (!this.#removedGamesQueue.isEmpty()) {
-                const appId = this.#removedGamesQueue.dequeue();
+                const app = this.#removedGamesQueue.dequeue();
                 const purchase = {
-                    steamId,
-                    appId,
+                    steamId: app.steamId,
+                    appId: app.appId,
                     price: 0,
                     priceFormatted: "$0.00",
                     datePurchased: DateTime.now().setZone('America/New_York').toISO()
                 };
-                if (apps[appId]) {
-                    purchase.name = apps[appId];
+                if (apps[app.appId]) {
+                    purchase.name = apps[app.appId];
                 }
                 removed.push(purchase);
             }
@@ -201,12 +214,10 @@ class PurchaseProcessor {
             }
 
             return got.post(`http://${process.env.API_URL}/api/purchases`, { json: { purchases: removed } });
-        }).then(() => {
-            removedGames = [];
         }).catch(error => {
             console.error("Error while processing the removed games list.");
             console.error(error);
-        })  
+        })
     }
 
     /**
