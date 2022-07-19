@@ -1,6 +1,7 @@
 const Purchases = require('../models/purchases');
 const DateTime = require('luxon').DateTime;
 const SteamApi = require('../api/steam');
+const dateWithTimeRegex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/g;
 
 const getPurchasesByDateRange = (steamId, start, end) => {
     let startDate = null;
@@ -10,10 +11,20 @@ const getPurchasesByDateRange = (steamId, start, end) => {
     };
 
     if (start) {
-        startDate = DateTime.fromISO(start).setZone('America/New_York').startOf('day').toISO();
+        if (start.match(dateWithTimeRegex)) {
+            // If the date string contains time, use it
+            startDate = DateTime.fromISO(start).setZone('America/New_York').toISO();
+        } else {
+            // Otherwise set it to start of day
+            startDate = DateTime.fromISO(start).setZone('America/New_York').startOf('day').toISO();
+        }
 
-	if (end) {
-            endDate = DateTime.fromISO(end).setZone('America/New_York').endOf('day').toISO();
+	    if (end) {
+            if (end.match(dateWithTimeRegex)) {
+                endDate = DateTime.fromISO(end).setZone('America/New_York').toISO();
+            } else {
+                endDate = DateTime.fromISO(end).setZone('America/New_York').endOf('day').toISO();
+            }
         }
         else {
             endDate = DateTime.fromISO(start).setZone('America/New_York').endOf('day').toISO();

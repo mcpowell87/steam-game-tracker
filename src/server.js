@@ -10,8 +10,12 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const app = express();
 const purchaseProcessor = new PurchaseProcessor([process.env.STEAM_ID]);
 
-if (process.env.DRY_RUN) {
-  console.debug("DRY RUN!")
+if (process.env.DEBUG) {
+  console.debug("Using env variables:");
+  const env = Object.keys(process.env).map(k => {
+    return `${k}: ${process.env[k]}`;
+  });
+  console.debug(env.join('\n'));
 }
 
 app.use(cors());
@@ -39,7 +43,9 @@ app.listen(PORT, () => {
     })
     .then(() => {
       console.log("Connected to the database!");
-      purchaseProcessor.start();
+      if (!process.env.API_ONLY) {
+        purchaseProcessor.start();
+      }
     })
     .catch(err => {
       console.log("Cannot connect to the database!", err);
