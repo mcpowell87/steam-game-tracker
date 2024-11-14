@@ -1,9 +1,7 @@
-const got = require('got');
-const path = require('path');
-const { DateTime } = require('luxon');
-const SteamApi = require('../api/steam');
-const Queue = require('./queue');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+import got from "got";
+import { DateTime } from "luxon";
+import * as SteamApi from "../api/steam.js";
+import Queue from "./queue.js";
 
 class PurchaseProcessor {
     #delayBetweenSteamApiCalls = 1000;
@@ -152,6 +150,7 @@ class PurchaseProcessor {
 
             console.debug(`Adding ${purchase.name} (appid: ${purchase.appId}) with price ${purchase.priceFormatted}`)
             if (process.env.DRY_RUN === "true") {
+                console.info("DRY RUN - Not saving to db");
                 return;
             }
             return got.post(`http://${process.env.API_URL}/api/purchases`, { json: { purchases: purchase } })
@@ -257,4 +256,4 @@ class PurchaseProcessor {
     }
 }
 
-module.exports = PurchaseProcessor;
+export default PurchaseProcessor;

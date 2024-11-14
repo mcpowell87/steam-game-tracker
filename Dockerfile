@@ -7,6 +7,7 @@ ENV STEAM_API_KEY=
 ENV API_URL=localhost:30000
 ENV TZ=America/New_York
 ENV STEAM_ID=
+ENV DRY_RUN=false
 
 EXPOSE 30000
 

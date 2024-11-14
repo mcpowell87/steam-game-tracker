@@ -1,11 +1,19 @@
-const express = require('express');
-const morgan = require('morgan');
-const path = require('path');
-const routes = require('./routes');
-const cors = require('cors');
-const getNewGamesForUser = require('./scripts/getNewGamesForUser');
-const PurchaseProcessor = require('./util/purchaseProcessor');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+import express from "express";
+import morgan from "morgan";
+import path from "path";
+import routes from "./routes/index.js";
+import cors from "cors";
+import db from "./models/index.js";
+import PurchaseProcessor from "./util/purchaseProcessor.js";
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+
+// __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Configure dotenv
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 const purchaseProcessor = new PurchaseProcessor([process.env.STEAM_ID]);
@@ -25,8 +33,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(morgan('combined'))
-
-const db = require("./models");
 
 app.use('/api', routes)
 

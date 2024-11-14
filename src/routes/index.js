@@ -1,7 +1,7 @@
-const steamRoutes = require('./steam');
-const purchasesRoutes = require('./purchases');
-
-var router = require("express").Router();
+import steamRoutes from "./steam.js";
+import purchasesRoutes from "./purchases.js";
+import { Router } from "express";
+var router = Router();
 
 router.get('/api-status', (req, res) => {
     res.json({
@@ -12,4 +12,4 @@ router.get('/api-status', (req, res) => {
 router.use('/steam', steamRoutes);
 router.use('/purchases', purchasesRoutes);
 
-module.exports = router;
+export default router;

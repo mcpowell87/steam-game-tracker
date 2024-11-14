@@ -1,9 +1,10 @@
-const Purchases = require('../models/purchases');
-const DateTime = require('luxon').DateTime;
-const SteamApi = require('../api/steam');
+import { averageDailySpend, bestMonth, averageMonthlySpend, averageYearlySpend, bestDay, bestYear } from './stats.js';
+import Purchases from "../models/purchases.js";
+import {DateTime} from "luxon";
+import { getOwnedGames } from "../api/steam.js";
 const dateWithTimeRegex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/g;
 
-const getPurchasesByDateRange = (steamId, start, end) => {
+export const getPurchasesByDateRange = (steamId, start, end) => {
     let startDate = null;
     let endDate = null;
     const filter = {
@@ -43,7 +44,7 @@ const getPurchasesByDateRange = (steamId, start, end) => {
     })
 }
 
-const searchPurchases = (steamId, name) => {
+export const searchPurchases = (steamId, name) => {
     const filter = {
         steamId,
         name: { $regex: `${name}`, $options: "i" }
@@ -54,7 +55,7 @@ const searchPurchases = (steamId, name) => {
     });
 }
 
-const getPurchaseByAppId = (steamId, appId) => {
+export const getPurchaseByAppId = (steamId, appId) => {
     const filter = {
         steamId,
         appId
@@ -69,7 +70,48 @@ const getPurchaseByAppId = (steamId, appId) => {
     });
 }
 
-const calculateStats = async (steamId) => {
+const toDollars = (price) => {
+    return +(price / 100.00).toFixed(2);
+}
+
+export const getStats = async (steamId) => {
+    const result = await Purchases.aggregate([
+        {
+            $match: { steamId },
+        },
+        {
+          $facet: {
+            avgMonthlySpend: averageMonthlySpend(),
+            bestMonth: bestMonth(),
+            avgYearlySpend: averageYearlySpend(),
+            bestYear: bestYear(),
+            avgDailySpend: averageDailySpend(),
+            bestDay: bestDay()
+          },
+        },
+      ]);
+      const stats = result[0] || {};
+
+      let month = null;
+
+      if (stats.bestMonth?.[0]?.month && stats.bestMonth?.[0]?.year) {
+        month = `${stats.bestMonth[0].year}-${stats.bestMonth[0].month}`
+      }
+
+      return {
+        avgMonthlySpend: stats.avgMonthlySpend?.[0]?.avgMonthlySpend || 0,
+        bestMonth: month,
+        bestMonthSpend: stats.bestMonth?.[0]?.totalSpend || 0,
+        avgYearlySpend: stats.avgYearlySpend?.[0]?.avgYearlySpend || 0,
+        bestYear: stats.bestYear?.[0]?.year || null,
+        bestYearSpend: stats.bestYear?.[0]?.totalSpend || 0,
+        avgDailySpend: stats.avgDailySpend?.[0]?.avgDailySpend || 0,
+        bestDay: stats.bestDay?.[0]?.date || null,
+        bestDaySpend: stats.bestDay?.[0]?.totalSpend || 0
+      };
+}
+
+export const calculateStats = async (steamId) => {
     const stats = {
         totalPlaytimeMinutes: 0,
         numberPlayed: 0,
@@ -77,16 +119,10 @@ const calculateStats = async (steamId) => {
         numberOwned: 0,
         totalCost: 0.0,
         costPerMinute: 0,
-        playedList: [],
-        /*avgMonthlySpend: 0.0,
-        avgMonthlyBuy: 0,
-        avgYearlySpend: 0.0,
-        avgYearlyBuy: 0,
-        avgDailySpend: 0.0,
-        avgDailyBuy: 0,*/
+        playedList: []
     };
 
-    const ownedGamesResponse = await SteamApi.getOwnedGames(steamId);
+    const ownedGamesResponse = await getOwnedGames(steamId);
     const ownedGames = JSON.parse(ownedGamesResponse.body);
     const ownedDict = ownedGames.response.games.reduce((result, game) => {
         result[game.appid] = game;
@@ -110,16 +146,14 @@ const calculateStats = async (steamId) => {
         }
     }
     // We don't really care too much about precision. 
-    stats.totalCost = +(stats.totalCost / 100.00).toFixed(2);
+    stats.totalCost = toDollars(stats.totalCost);
     stats.costPerMinute = +(stats.totalCost / stats.totalPlaytimeMinutes).toFixed(2);
     stats.percentagePlayed = ((stats.numberPlayed / stats.numberOwned) * 100).toFixed(2);
 
-    return stats;
-}
+    const purchaseStats = await getStats(steamId);
 
-module.exports = {
-    getPurchasesByDateRange,
-    getPurchaseByAppId,
-    searchPurchases,
-    calculateStats
-};
+    return {
+        ...stats,
+        ...purchaseStats
+    };
+}

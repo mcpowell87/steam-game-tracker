@@ -1,6 +1,6 @@
-const SteamApi = require('../api/steam');
+import * as SteamApi from "../api/steam.js";
 
-const getAppDetails = async (req, res) => {
+export const getAppDetails = async (req, res) => {
     // ToDo: I think I should queue this since steam has a 200 limit per 5 minutes.
     if (!req.params.appId) {
         res.status(400).json({ message: "AppId is required." });
@@ -15,7 +15,7 @@ const getAppDetails = async (req, res) => {
     }
 }
 
-const getAppList = async (req, res) => {
+export const getAppList = async (req, res) => {
     try {
         const response = await SteamApi.getAppList();
         res.status(200).json(response);
@@ -24,7 +24,7 @@ const getAppList = async (req, res) => {
     }
 }
 
-const getOwnedGames = async (req, res) => {
+export const getOwnedGames = async (req, res) => {
     if (!req.params.steamId) {
         res.status(400).json({ message: "Missing parameter: SteamId"} );
         return;
@@ -36,10 +36,4 @@ const getOwnedGames = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error });
     }
-}
-
-module.exports = {
-    getAppDetails,
-    getOwnedGames,
-    getAppList
 }

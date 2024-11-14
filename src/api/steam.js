@@ -1,8 +1,6 @@
-const got = require('got');
-const SteamApiUrls = require('../constants/steamApiUrls');
-const cache = require('../util/cache');
-const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+import got from "got";
+import SteamApiUrls from "../constants/steamApiUrls.js";
+import cache from "../util/cache.js";
 
 /**
  * Returns the app details given a app id.
@@ -10,7 +8,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
  * @param {bool} ignoreCache Force retrieval of fresh data
  * @returns App Details
  */
-const getAppDetails = (appId, ignoreCache=false) => {
+export const getAppDetails = (appId, ignoreCache=false) => {
     if (!appId) {
         return null;
     }
@@ -33,7 +31,7 @@ const getAppDetails = (appId, ignoreCache=false) => {
  * @param {bool} ignoreCache Force retrieval of fresh data
  * @returns Gets the list of apps.
  */
-const getAppList = (ignoreCache=false) => {
+export const getAppList = (ignoreCache=false) => {
     const cached = cache.get('apps');
     if (cached && !ignoreCache) {
         return Promise.resolve(cached);
@@ -56,17 +54,11 @@ const getAppList = (ignoreCache=false) => {
  * @param {string} steamId Steam ID
  * @returns List of owned games given a steam user.
  */
-const getOwnedGames = (steamId) => {
+export const getOwnedGames = (steamId) => {
     const apiKey = process.env.STEAM_API_KEY;
     if (!apiKey || !steamId) {
         return null;
     }
 
     return got(SteamApiUrls.GetOwnedGames(apiKey, steamId));
-}
-
-module.exports = {
-    getAppDetails,
-    getOwnedGames,
-    getAppList
 }

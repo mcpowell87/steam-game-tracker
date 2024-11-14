@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const timezone = require('mongoose-timezone');
+import mongoose from "mongoose";
+import timezone from "mongoose-timezone";
 mongoose.set('useCreateIndex', true);
 
 const purchasesSchema = new mongoose.Schema([{
@@ -38,4 +38,4 @@ purchasesSchema.plugin(timezone, { paths: ['datePurchased']} );
 
 const Purchases = mongoose.model("Purchases", purchasesSchema);
 
-module.exports = Purchases;
+export default Purchases;

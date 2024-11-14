@@ -1,8 +1,6 @@
-const got = require('got');
-const path = require('path');
-const { DateTime } = require('luxon');
-const SteamApi = require('../api/steam');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+import got from "got";
+import { DateTime } from "luxon";
+import SteamApi from "../api/steam.js";
 
 const delayBetweenSteamApiCalls = 1000;
 
@@ -171,4 +169,4 @@ const doNext = () => {
     }
 }
 
-module.exports = getNewGamesForUser;
+export default getNewGamesForUser;

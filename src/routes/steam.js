@@ -1,11 +1,11 @@
+import { Router } from "express";
+import {getAppDetails, getAppList, getOwnedGames} from "../controllers/steam.js";
+var router = Router();
 
-var router = require("express").Router();
-var steamController = require('../controllers/steam');
+router.get("/app/:appId", getAppDetails);
 
-router.get("/app/:appId", steamController.getAppDetails);
+router.get("/apps", getAppList);
 
-router.get("/apps", steamController.getAppList);
+router.get('/user/:steamId/games', getOwnedGames);
 
-router.get('/user/:steamId/games', steamController.getOwnedGames);
-
-module.exports = router;
+export default router;

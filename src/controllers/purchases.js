@@ -1,12 +1,12 @@
-const Purchases = require("../models/purchases");
-const {
+import Purchases from "../models/purchases.js";
+import {
     getPurchasesByDateRange,
     searchPurchases,
     calculateStats,
     getPurchaseByAppId
-} = require('../helpers/purchases');
+} from "../helpers/purchases.js";
 
-const get = async (req, res) => {
+export const get = async (req, res) => {
     if (!req.params.steamId) {
         return res.status(400).json({ message: "SteamId is required." });
     }
@@ -23,7 +23,7 @@ const get = async (req, res) => {
     return res.status(200).json(purchases);
 }
 
-const stats = async (req, res) => {
+export const stats = async (req, res) => {
     if (!req.params.steamId) {
         return res.status(400).json({ message: "SteamID is required." });
     }
@@ -38,7 +38,7 @@ const stats = async (req, res) => {
     }
 }
 
-const create = async (req, res) => {
+export const create = async (req, res) => {
     if (!req.body.purchases || req.body.purchases.length == 0) {
         res.status(400).json({ message: "Purchases is required." });
         return;
@@ -68,9 +68,3 @@ const create = async (req, res) => {
         return res.status(500).json({ error: err.message });
     });
 }
-
-module.exports = {
-    get,
-    create,
-    stats
-};

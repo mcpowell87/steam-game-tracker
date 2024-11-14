@@ -1,5 +1,5 @@
-const expect = require('chai').expect;
-const Queue = require('../../src/util/queue');
+import { expect } from "chai";
+import Queue from "../../src/util/queue";
 
 describe('Queue', () => {
     it('should successfully dequeue with one item', () => {
