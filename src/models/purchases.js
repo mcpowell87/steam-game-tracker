@@ -1,15 +1,16 @@
 import mongoose from "mongoose";
 import timezone from "mongoose-timezone";
-mongoose.set('useCreateIndex', true);
+mongoose.set("useCreateIndex", true);
 
-const purchasesSchema = new mongoose.Schema([{
+const purchasesSchema = new mongoose.Schema([
+  {
     steamId: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     appId: {
-        type: Number,
-        required: true
+      type: Number,
+      required: true,
     },
     removed: Boolean,
     name: String,
@@ -20,21 +21,24 @@ const purchasesSchema = new mongoose.Schema([{
     price: Number,
     priceFormatted: String,
     datePurchased: {
-        type: Date,
-        required: true
-    }
-}]);
+      type: Date,
+      required: true,
+    },
+  },
+]);
 
-purchasesSchema.index({
+purchasesSchema.index(
+  {
     steamId: 1,
     appId: 1,
-},
-{
+  },
+  {
     unique: true,
-    dropDupes: true
-});
+    dropDupes: true,
+  },
+);
 
-purchasesSchema.plugin(timezone, { paths: ['datePurchased']} );
+purchasesSchema.plugin(timezone, { paths: ["datePurchased"] });
 
 const Purchases = mongoose.model("Purchases", purchasesSchema);
 

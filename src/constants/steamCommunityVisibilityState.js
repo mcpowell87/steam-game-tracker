@@ -1,4 +1,4 @@
 export default {
-    Private: 1,
-    Public: 3
-}
+  Private: 1,
+  Public: 3,
+};
