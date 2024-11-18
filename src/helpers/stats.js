@@ -37,7 +37,7 @@ export const averageMonthlySpend = () => [
   {
     $group: {
       _id: null,
-      averageMonthlySpend: { $avg: "$totalSpend" },
+      avgMonthlySpend: { $avg: "$totalSpend" },
     },
   },
   {
